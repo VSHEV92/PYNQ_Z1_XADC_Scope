@@ -1,0 +1,14 @@
+*
+!.gitignore
+
+!hls_code
+!hls_code/*.cpp
+!hls_code/*.h
+!hls_code/*.zip
+
+!tcl_xdc_source
+!tcl_xdc_source/*.tcl
+!tcl_xdc_source/*.xdc
+!arm_code
+!arm_code/*.c
+
