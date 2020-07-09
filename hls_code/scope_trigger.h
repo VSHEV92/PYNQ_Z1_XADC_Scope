@@ -15,9 +15,9 @@ typedef ap_uint<2> trig_mode_t;
 typedef ap_int<16> trig_level_t;
 typedef ap_int<16> in_data_t;
 
-// размер DMA пакета и количество передаваемых пакетов
-const unsigned int BLOCK_SIZE = 8;
-typedef ap_uint<5> blocks_num_t;
+// размер DMA пакета и коэффициент прореживания
+const unsigned int BLOCK_SIZE = 512;
+typedef ap_uint<5> downsamp_t;
 
 // структуры для входного и выходного AXIS
 struct in_data_AXI{

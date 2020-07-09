@@ -5,7 +5,7 @@ void scope_trigger( hls::stream<in_data_AXI>&   in_data,     // данные о�
 		            hls::stream<out_data_AXI>&  out_data,    // данные для DMA
 		            trig_mode_t                 trig_mode,   // режим триггера
 					trig_level_t                trig_level,  // уровень триггера
-					blocks_num_t                blocks_num,  // количество выдаваемых в DMA блоков
+					downsamp_t                  downsamp,    // коэффицент прореживания
 					bool                        once_start   // старт однократной выдачи данных (срабатываем по фронту)
 				);
 
@@ -19,7 +19,7 @@ int main(){
     // управляющие сигналы
 	trig_mode_t    trig_mode;
 	trig_level_t   trig_level;
-	blocks_num_t   blocks_num;
+	downsamp_t     downsamp;
 	bool           once_start;
 
 	bool stream_empty;
@@ -37,10 +37,10 @@ int main(){
 	// ---------- тест режима AUTO ---------------
 	trig_mode = AUTO;
 	trig_level = 0;
-	blocks_num = 1;
+	downsamp = 1;
 	once_start = false;
 	for (int i = 0; i < BLOCK_SIZE*3; i++)
-		scope_trigger(in_data, out_data, trig_mode, trig_level, blocks_num, once_start);
+		scope_trigger(in_data, out_data, trig_mode, trig_level, downsamp, once_start);
 
 	std::cout << "----------------------------------------------------------" << std::endl;
 	std::cout << "-------------------- Test AUTO ---------------------------" << std::endl;
@@ -55,10 +55,10 @@ int main(){
 	// ---------- тест режима TRIGGER ------------
 	trig_mode = TRIGGER;
 	trig_level = 10;
-	blocks_num = 2;
+	downsamp = 2;
 	once_start = false;
 	for (int i = 0; i < BLOCK_SIZE*50; i++)
-		scope_trigger(in_data, out_data, trig_mode, trig_level, blocks_num, once_start);
+		scope_trigger(in_data, out_data, trig_mode, trig_level, downsamp, once_start);
 
 	std::cout << "----------------------------------------------------------" << std::endl;
 	std::cout << "-------------------- Test TRIGGER ------------------------" << std::endl;
@@ -74,10 +74,10 @@ int main(){
 	// ---------- тест режима ONCE ------------
 	trig_mode = ONCE;
 	trig_level = 10;
-	blocks_num = 4;
+	downsamp = 4;
 	once_start = false;
 	for (int i = 0; i < BLOCK_SIZE*16; i++){
-		scope_trigger(in_data, out_data, trig_mode, trig_level, blocks_num, once_start);
+		scope_trigger(in_data, out_data, trig_mode, trig_level, downsamp, once_start);
 		if (i == BLOCK_SIZE*3-5 || i == BLOCK_SIZE*10+8)
 			once_start = true;
 		else
@@ -97,10 +97,10 @@ int main(){
 	// ---------- тест режима ONCE_TRIG ------------
 	trig_mode = ONCE_TRIG;
 	trig_level = -17;
-	blocks_num = 3;
+	downsamp = 3;
 	once_start = false;
 	for (int i = 0; i < BLOCK_SIZE*176; i++){
-		scope_trigger(in_data, out_data, trig_mode, trig_level, blocks_num, once_start);
+		scope_trigger(in_data, out_data, trig_mode, trig_level, downsamp, once_start);
 		if (i == BLOCK_SIZE*3-5 || i == BLOCK_SIZE*100+13)
 			once_start = true;
 		else

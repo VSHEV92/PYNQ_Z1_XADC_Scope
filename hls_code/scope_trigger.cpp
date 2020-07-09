@@ -1,20 +1,20 @@
 #include "scope_trigger.h"
 
-// блок реализует функцию триггера осцилографа и выдает в DMA заданное число блоков
+// блок реализует функцию триггера осцилографа и выдает в данные DMA с заданным коэффициентом прореживания
 // триггер срабатывает при пересечении уровня сверху вниз
 
 void scope_trigger( hls::stream<in_data_AXI>&   in_data,     // данные от XADC
 		            hls::stream<out_data_AXI>&  out_data,    // данные для DMA
 		            trig_mode_t                 trig_mode,   // режим триггера
 					trig_level_t                trig_level,  // уровень триггера
-					blocks_num_t                blocks_num,  // количество выдаваемых в DMA блоков
+					downsamp_t                  downsamp,    // коэффицент прореживания
 					bool                        once_start   // старт однократной выдачи данных (срабатываем по фронту)
 				){
 
 #pragma HLS INTERFACE s_axilite port=return bundle=ctrl
 #pragma HLS INTERFACE s_axilite port=trig_mode bundle=ctrl
 #pragma HLS INTERFACE s_axilite port=trig_level bundle=ctrl
-#pragma HLS INTERFACE s_axilite port=blocks_num bundle=ctrl
+#pragma HLS INTERFACE s_axilite port=downsamp bundle=ctrl
 #pragma HLS INTERFACE s_axilite port=once_start bundle=ctrl
 
 #pragma HLS INTERFACE axis register both port=in_data
@@ -22,9 +22,9 @@ void scope_trigger( hls::stream<in_data_AXI>&   in_data,     // данные о�
 
 static trig_mode_t trig_mode_internal = AUTO;
 
-// счетчики числа оотсчеов и блоков DMA
+// счетчики числа отсчетов
 static unsigned int samp_count = 0;
-static unsigned int block_count = 0;
+static unsigned int downsamp_count = 0;
 
 // флаг пересечения уровня триггера
 static bool trig_flag = false;
@@ -50,16 +50,20 @@ switch (trig_mode_internal)
 {
     // режим постоянной выдачи без триггра
     case AUTO:
-        samp_count++;
-	    out_data_samp.data = in_data_samp_new.data;
-	    if (samp_count == BLOCK_SIZE){
-		    samp_count = 0;
-		    out_data_samp.last = 1;
-		    trig_mode_internal = trig_mode; // обновляем режим триггра после выдачи блока
-	    } else
-	    	out_data_samp.last = 0;
+    	downsamp_count++;
+		if (downsamp_count == downsamp){
+			downsamp_count = 0;
+            samp_count++;
+	        out_data_samp.data = in_data_samp_new.data;
+	        if (samp_count == BLOCK_SIZE){
+		        samp_count = 0;
+		        out_data_samp.last = 1;
+		        trig_mode_internal = trig_mode; // обновляем режим триггра после выдачи блока
+	        } else
+	    	    out_data_samp.last = 0;
 
-	    out_data << out_data_samp;
+	        out_data << out_data_samp;
+		}
         break;
 
     // режим выдачи при пересечении уровня триггера
@@ -70,21 +74,21 @@ switch (trig_mode_internal)
 	 	    else
 	 	    	trig_mode_internal = trig_mode; // если триггер не сработал, можем обновить режим триггера
 	    } else {
-		    samp_count++;
-		    out_data_samp.data = in_data_samp_new.data;
-		    if (samp_count == BLOCK_SIZE){
-		        samp_count = 0;
-		        out_data_samp.last = 1;
-		        block_count++;
-		        if (block_count >= blocks_num){ // после выдачи заданного числа блоков сбрасываем флаг и обновляем режим триггра
-		    	    block_count = 0;
-		    	    trig_flag = false;
+	    	downsamp_count++;
+	    	if (downsamp_count == downsamp){
+	    		downsamp_count = 0;
+		        samp_count++;
+		        out_data_samp.data = in_data_samp_new.data;
+		        if (samp_count == BLOCK_SIZE){ // после выдачи заданного числа отсчетов сбрасываем флаг и обновляем режим триггра
+		            samp_count = 0;
+		            out_data_samp.last = 1;
+		            trig_flag = false;
 		    	    trig_mode_internal = trig_mode;
-		        }
-		    } else
-		   	     out_data_samp.last = 0;
+		        } else
+		   	        out_data_samp.last = 0;
 
-		    out_data << out_data_samp;
+		        out_data << out_data_samp;
+	        }
 	    }
         break;
 
@@ -96,21 +100,21 @@ switch (trig_mode_internal)
     	    else
     	    	trig_mode_internal = trig_mode; // если старт еще не нажат, можем обновить режим триггера
     	} else {
-    		samp_count++;
-    		out_data_samp.data = in_data_samp_new.data;
-    		if (samp_count == BLOCK_SIZE){
-    		    samp_count = 0;
-    		    out_data_samp.last = 1;
-    		    block_count++;
-    			if (block_count >= blocks_num){ // после выдачи заданного числа блоков сбрасываем флаг и обновляем режим триггра
-    			    block_count = 0;
-    			    once_start_flag = false;
+    		downsamp_count++;
+    	    if (downsamp_count == downsamp){
+    	    	downsamp_count = 0;
+    	        samp_count++;
+    		    out_data_samp.data = in_data_samp_new.data;
+    		    if (samp_count == BLOCK_SIZE){ // после выдачи заданного числа отсчетов сбрасываем флаг и обновляем режим триггра
+    		        samp_count = 0;
+    		        out_data_samp.last = 1;
+    		        once_start_flag = false;
     				trig_mode_internal = trig_mode;
-    			}
-    		} else
-    			out_data_samp.last = 0;
+    			} else
+    			    out_data_samp.last = 0;
 
-    	    out_data << out_data_samp;
+    		    out_data << out_data_samp;
+    	    }
     	}
     	break;
 
@@ -129,22 +133,22 @@ switch (trig_mode_internal)
     				once_start_flag = false;
     		    trig_mode_internal = trig_mode;
     	} else {
-    	    samp_count++;
-    	    out_data_samp.data = in_data_samp_new.data;
-    	    if (samp_count == BLOCK_SIZE){
-    	        samp_count = 0;
-    	    	out_data_samp.last = 1;
-    	    	block_count++;
-    	    	if (block_count >= blocks_num){ // после выдачи заданного числа блоков сбрасываем флаг и обновляем режим триггра
-    	    	    block_count = 0;
+    		downsamp_count++;
+    		if (downsamp_count == downsamp){
+    		    downsamp_count = 0;
+    	        samp_count++;
+    	        out_data_samp.data = in_data_samp_new.data;
+    	        if (samp_count == BLOCK_SIZE){  // после выдачи заданного числа отсчетов сбрасываем флаги и обновляем режим триггра
+    	            samp_count = 0;
+    	    	    out_data_samp.last = 1;
     	    		once_start_flag = false;
     	    		trig_flag = false;
     	    		trig_mode_internal = trig_mode;
-    	    	}
-    	    } else
-    	        out_data_samp.last = 0;
+    	    	} else
+    	            out_data_samp.last = 0;
 
-    	    out_data << out_data_samp;
+    	        out_data << out_data_samp;
+    	    }
     	}
     }
 
