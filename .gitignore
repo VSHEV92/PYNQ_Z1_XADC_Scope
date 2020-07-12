@@ -13,3 +13,5 @@
 !arm_code/*.c
 !arm_code/*.h
 
+!zynq_bd_wrapper.xsa
+!zynq_bd_wrapper_debug.xsa

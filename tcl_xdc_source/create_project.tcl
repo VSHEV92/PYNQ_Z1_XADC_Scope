@@ -17,6 +17,7 @@ update_ip_catalog
 
 # добавляем xdc file с LOC constraints
 add_files -fileset constrs_1 -norecurse LOC.xdc
+add_files -fileset constrs_1 -norecurse Debug.xdc
 
 # создаем block design, добавляем zynq и делаем block automation
 create_bd_design "zynq_bd"
