@@ -197,7 +197,7 @@
                                 "portIndex": 3,
                                 "nets": [
                                     {
-                                        "name": "zynq_bd_i/scope_trigger_0_out_data_TLAST",
+                                        "name": "zynq_bd_i/axi_dma_0_s2mm_introut",
                                         "isBus": false
                                     }
                                 ]
@@ -213,7 +213,7 @@
                                 "portIndex": 4,
                                 "nets": [
                                     {
-                                        "name": "zynq_bd_i/scope_trigger_0_out_data_TREADY",
+                                        "name": "zynq_bd_i/xadc_wiz_0/eoc_out",
                                         "isBus": false
                                     }
                                 ]
@@ -229,7 +229,7 @@
                                 "portIndex": 5,
                                 "nets": [
                                     {
-                                        "name": "zynq_bd_i/scope_trigger_0_out_data_TVALID",
+                                        "name": "zynq_bd_i/xadc_wiz_0/eos_out",
                                         "isBus": false
                                     }
                                 ]
@@ -245,7 +245,7 @@
                                 "portIndex": 6,
                                 "nets": [
                                     {
-                                        "name": "zynq_bd_i/xadc_wiz_0_M_AXIS_TREADY",
+                                        "name": "zynq_bd_i/scope_trigger_0_out_data_TLAST",
                                         "isBus": false
                                     }
                                 ]
@@ -259,6 +259,54 @@
                                 "leftIndex": 0,
                                 "rightIndex": 0,
                                 "portIndex": 7,
+                                "nets": [
+                                    {
+                                        "name": "zynq_bd_i/scope_trigger_0_out_data_TREADY",
+                                        "isBus": false
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "probe8",
+                                "id": 8,
+                                "type": "DATA_TRIGGER",
+                                "direction": "IN",
+                                "isVector": false,
+                                "leftIndex": 0,
+                                "rightIndex": 0,
+                                "portIndex": 8,
+                                "nets": [
+                                    {
+                                        "name": "zynq_bd_i/scope_trigger_0_out_data_TVALID",
+                                        "isBus": false
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "probe9",
+                                "id": 9,
+                                "type": "DATA_TRIGGER",
+                                "direction": "IN",
+                                "isVector": false,
+                                "leftIndex": 0,
+                                "rightIndex": 0,
+                                "portIndex": 9,
+                                "nets": [
+                                    {
+                                        "name": "zynq_bd_i/xadc_wiz_0_M_AXIS_TREADY",
+                                        "isBus": false
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "probe10",
+                                "id": 10,
+                                "type": "DATA_TRIGGER",
+                                "direction": "IN",
+                                "isVector": false,
+                                "leftIndex": 0,
+                                "rightIndex": 0,
+                                "portIndex": 10,
                                 "nets": [
                                     {
                                         "name": "zynq_bd_i/xadc_wiz_0_M_AXIS_TVALID",

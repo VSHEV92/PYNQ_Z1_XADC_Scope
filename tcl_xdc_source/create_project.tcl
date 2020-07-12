@@ -48,7 +48,7 @@ set_property -dict [list CONFIG.PCW_USE_S_AXI_HP0 {1}] [get_bd_cells processing_
 
 # добавляем и настраиваем XADC
 create_bd_cell -type ip -vlnv xilinx.com:ip:xadc_wiz:3.3 xadc_wiz_0
-set_property -dict [list CONFIG.XADC_STARUP_SELECTION {channel_sequencer} CONFIG.ENABLE_AXI4STREAM {true} CONFIG.OT_ALARM {false} CONFIG.USER_TEMP_ALARM {false} CONFIG.VCCINT_ALARM {false} CONFIG.VCCAUX_ALARM {false} CONFIG.ENABLE_VCCPINT_ALARM {false} CONFIG.ENABLE_VCCPAUX_ALARM {false} CONFIG.ENABLE_VCCDDRO_ALARM {false} CONFIG.BIPOLAR_VP_VN {true} CONFIG.FIFO_DEPTH {512} CONFIG.SEQUENCER_MODE {Continuous} CONFIG.EXTERNAL_MUX_CHANNEL {VP_VN} CONFIG.SINGLE_CHANNEL_SELECTION {TEMPERATURE} CONFIG.CHANNEL_ENABLE_VP_VN {true}] [get_bd_cells xadc_wiz_0]
+set_property -dict [list CONFIG.ENABLE_AXI4STREAM {true} CONFIG.OT_ALARM {false} CONFIG.USER_TEMP_ALARM {false} CONFIG.VCCINT_ALARM {false} CONFIG.VCCAUX_ALARM {false} CONFIG.ENABLE_VCCPINT_ALARM {false} CONFIG.ENABLE_VCCPAUX_ALARM {false} CONFIG.ENABLE_VCCDDRO_ALARM {false} CONFIG.SINGLE_CHANNEL_SELECTION {VP_VN} CONFIG.SINGLE_CHANNEL_ENABLE_CALIBRATION {true} CONFIG.BIPOLAR_OPERATION {true} CONFIG.FIFO_DEPTH {512}] [get_bd_cells xadc_wiz_0]
 make_bd_intf_pins_external  [get_bd_intf_pins xadc_wiz_0/Vp_Vn]
 
 # выполняем connection automation для XADC
