@@ -51,7 +51,7 @@ switch (trig_mode_internal)
     // режим постоянной выдачи без триггра
     case AUTO:
     	downsamp_count++;
-		if (downsamp_count == downsamp){
+		if (downsamp_count >= downsamp){
 			downsamp_count = 0;
             samp_count++;
 	        out_data_samp.data = in_data_samp_new.data;
@@ -75,7 +75,7 @@ switch (trig_mode_internal)
 	 	    	trig_mode_internal = trig_mode; // если триггер не сработал, можем обновить режим триггера
 	    } else {
 	    	downsamp_count++;
-	    	if (downsamp_count == downsamp){
+	    	if (downsamp_count >= downsamp){
 	    		downsamp_count = 0;
 		        samp_count++;
 		        out_data_samp.data = in_data_samp_new.data;
@@ -101,7 +101,7 @@ switch (trig_mode_internal)
     	    	trig_mode_internal = trig_mode; // если старт еще не нажат, можем обновить режим триггера
     	} else {
     		downsamp_count++;
-    	    if (downsamp_count == downsamp){
+    	    if (downsamp_count >= downsamp){
     	    	downsamp_count = 0;
     	        samp_count++;
     		    out_data_samp.data = in_data_samp_new.data;
@@ -134,7 +134,7 @@ switch (trig_mode_internal)
     		    trig_mode_internal = trig_mode;
     	} else {
     		downsamp_count++;
-    		if (downsamp_count == downsamp){
+    		if (downsamp_count >= downsamp){
     		    downsamp_count = 0;
     	        samp_count++;
     	        out_data_samp.data = in_data_samp_new.data;

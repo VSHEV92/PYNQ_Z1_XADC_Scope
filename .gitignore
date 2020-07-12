@@ -15,3 +15,4 @@
 
 !zynq_bd_wrapper.xsa
 !zynq_bd_wrapper_debug.xsa
+!debug_nets.ltx
