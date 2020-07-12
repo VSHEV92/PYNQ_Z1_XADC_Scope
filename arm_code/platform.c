@@ -17,6 +17,11 @@ void init_intr(XScuGic* IntrInstPtr){
 // инициализация триггера осцилографа
 void init_scopetrig(XScope_trigger *TrigInstPtr){
 	XScope_trigger_Initialize(TrigInstPtr, XPAR_XSCOPE_TRIGGER_0_DEVICE_ID);
+	XScope_trigger_Set_trig_mode_V(TrigInstPtr, 0);
+	XScope_trigger_Set_trig_level_V(TrigInstPtr, 0);
+	XScope_trigger_Set_downsamp_V(TrigInstPtr, 1);
+	XScope_trigger_Set_once_start(TrigInstPtr, 0);
+
 }
 
 // инициализация DMA контроллера

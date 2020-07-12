@@ -19,8 +19,15 @@ XScuGic InterruptController;
 XScope_trigger ScopeTrig;
 XAxiDma PL_DMA;
 
+#define UDP_Packet_Size 1024
+static struct udp_pcb *pcb;
+static struct pbuf *pbuf_to_be_sent = NULL;
+
 u8 *Ping_Buff = (u8 *)0x10000000;
 u8 *Pong_Buff = (u8 *)0x11000000;
+
+u8 Ping_Pong_Flag = 0;
+u8 DMA_Done_Flag = 0;
 
 // обработчик перерываний от PL DMA
 void DMA_RX_Handler(void *Callback){
@@ -30,7 +37,7 @@ void DMA_RX_Handler(void *Callback){
 	IrqStatus = XAxiDma_IntrGetIrq(AxiDmaInst, XAXIDMA_DEVICE_TO_DMA);
 	XAxiDma_IntrAckIrq(AxiDmaInst, IrqStatus, XAXIDMA_DEVICE_TO_DMA);
 
-	xil_printf("DMA RX Transfer Done!\n");
+	DMA_Done_Flag = 1;
 }
 
 
@@ -50,7 +57,7 @@ void recv_callback(void *arg, struct udp_pcb *tpcb, struct pbuf *p, struct ip_ad
 }
 
 int main(){
-	// ------------------------------------------------------------------------------------------------------
+	u8 *Send_Buff;
 
 	// инициализация контроллера прерываний и включаем прерывания
 	init_intr(&InterruptController);
@@ -70,27 +77,46 @@ int main(){
 	XAxiDma_IntrEnable(&PL_DMA, XAXIDMA_IRQ_IOC_MASK, XAXIDMA_DEVICE_TO_DMA);
 
 	// настраиваем TCP соединение
-	struct udp_pcb *pcb;
 	pcb = udp_new();
 	udp_bind(pcb, IP_ADDR_ANY, 5001);
 	udp_recv(pcb, recv_callback, NULL);
 
+	ip_addr_t ipaddr_host;
+	IP4_ADDR(&ipaddr_host, 192, 168, 1, 11);
+	udp_connect(pcb, &ipaddr_host, 5001);
+
 	// запускаем PL DMA
-	 XAxiDma_SimpleTransfer(&PL_DMA, (UINTPTR)Ping_Buff, 1024, XAXIDMA_DEVICE_TO_DMA);
+	XAxiDma_SimpleTransfer(&PL_DMA, (UINTPTR)Ping_Buff, UDP_Packet_Size, XAXIDMA_DEVICE_TO_DMA);
 
     // включаем триггер осцилографа
 	XScope_trigger_EnableAutoRestart(&ScopeTrig);
 	XScope_trigger_Start(&ScopeTrig);
 
-	u32 flag;
+	//u32 flag;
 
 	while (1){
-
-		flag = XAxiDma_Busy(&PL_DMA, XAXIDMA_DEVICE_TO_DMA);
-	    xil_printf("DMA Busy %u\n", flag);
-	    flag = XScope_trigger_IsIdle(&ScopeTrig);
-	    xil_printf("Trigger Idle %u\n", flag);
-
+		if (DMA_Done_Flag == 1){
+			DMA_Done_Flag = 0;
+			if (Ping_Pong_Flag == 0){
+				Xil_DCacheInvalidateRange((UINTPTR)Ping_Buff, UDP_Packet_Size);
+			    // передаем полученные данные через UDP
+				pbuf_to_be_sent = pbuf_alloc(PBUF_TRANSPORT, UDP_Packet_Size, PBUF_POOL);
+				memcpy(pbuf_to_be_sent->payload, Ping_Buff, UDP_Packet_Size);
+				udp_send(pcb, pbuf_to_be_sent);
+				pbuf_free(pbuf_to_be_sent);
+			    // начаинаем новую транзакцию DMA
+			    XAxiDma_SimpleTransfer(&PL_DMA, (UINTPTR)Pong_Buff, UDP_Packet_Size, XAXIDMA_DEVICE_TO_DMA);
+			    Ping_Pong_Flag = 1;
+			} else {
+				Xil_DCacheInvalidateRange((UINTPTR)Pong_Buff, UDP_Packet_Size);
+				pbuf_to_be_sent = pbuf_alloc(PBUF_TRANSPORT, UDP_Packet_Size, PBUF_POOL);
+				memcpy(pbuf_to_be_sent->payload, Pong_Buff, UDP_Packet_Size);
+				udp_send(pcb, pbuf_to_be_sent);
+				pbuf_free(pbuf_to_be_sent);
+			    XAxiDma_SimpleTransfer(&PL_DMA, (UINTPTR)Ping_Buff, UDP_Packet_Size, XAXIDMA_DEVICE_TO_DMA);
+			    Ping_Pong_Flag = 0;
+			}
+		}
 		xemacif_input(&device_netif);
 	}
 	return 0;
