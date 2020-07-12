@@ -11,4 +11,5 @@
 !tcl_xdc_source/*.xdc
 !arm_code
 !arm_code/*.c
+!arm_code/*.h
 
