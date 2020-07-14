@@ -13,6 +13,9 @@
 !arm_code/*.c
 !arm_code/*.h
 
+!python_source
+!python_source/*.py
+
 !zynq_bd_wrapper.xsa
 !zynq_bd_wrapper_debug.xsa
 !debug_nets.ltx
