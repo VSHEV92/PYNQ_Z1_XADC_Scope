@@ -44,15 +44,29 @@ void DMA_RX_Handler(void *Callback){
 // callback функция при приеме пакета
 void recv_callback(void *arg, struct udp_pcb *tpcb, struct pbuf *p, struct ip_addr *addr, u16_t port)
 {
-//	u8* Data;
-//	Data = (u8 *)(p->payload);
-//
-//    for(int i=0; i<4; i++)
-//    	RX_Frame[i] = Data[i];
-//
-//    Update_Flag = 1;
-	// освобождаем буфер пакета
-	xil_printf("Recv UDP\n");
+	u8* Data;
+	u16 trig_lev;
+	u8 trig_mode;
+	u8 decimation;
+	u8 trig_start;
+
+	Data = (u8 *)(p->payload);
+	Xil_DCacheInvalidateRange((UINTPTR)Data, 5);
+	if (Data[0] == 255){
+		trig_lev = (((u16)Data[1]) << 8) + Data[2];
+		trig_mode = Data[3];
+		decimation = Data[4];
+		XScope_trigger_Set_trig_level_V(&ScopeTrig, trig_lev);
+		XScope_trigger_Set_trig_mode_V(&ScopeTrig, trig_mode);
+		XScope_trigger_Set_downsamp_V(&ScopeTrig, decimation);
+	} else if (Data[0] == 254){
+		trig_lev = (((u16)Data[1]) << 8) + Data[2];
+		XScope_trigger_Set_trig_level_V(&ScopeTrig, trig_lev);
+	} else if (Data[0] == 253){
+		trig_start = Data[1];
+		XScope_trigger_Set_once_start(&ScopeTrig, trig_start);
+	}
+
 	pbuf_free(p);
 }
 

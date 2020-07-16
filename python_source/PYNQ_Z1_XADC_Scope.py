@@ -20,14 +20,16 @@ root = tk.Tk()
 root.title('PYNQ Z1 XADC Scope')
 
 def animate(i):
-    #print(Net_Connect.RX_Data)
     Data = [x/16384*0.5 for x in Net_Connect.RX_Data]
     npData = np.array(Data)
+    # вычисляем спектр сигнала
     freqData = abs(np.fft.fft(npData))
     freqData = np.fft.fftshift(freqData)/len(npData)
     freqData = 20*np.log10(freqData/0.5)
     time_line.set_ydata(Data)
     freq_line.set_ydata(freqData)
+    time_line.set_xdata(Scope.time_span)
+    freq_line.set_xdata(Scope.freq_span)
 
 canvas = FigureCanvasTkAgg(fig, master=root)
 canvas.get_tk_widget().configure(width=1000, height=800)
@@ -54,7 +56,7 @@ Net_Connect = UDP_Connect(root)
 Net_Connect.get_frame().grid(column=1,row=1)
 
 # создаем и настраиваем widget управления осчилографом
-Scope = Scope_Ctrl(root, Net_Connect.sock, time_space)
+Scope = Scope_Ctrl(root, Net_Connect, time_space, freq_space)
 Scope.get_frame().grid(column=1,row=0)
 
 root.mainloop()
